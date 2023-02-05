@@ -3,6 +3,6 @@ import sys
 from os.path import dirname
 
 sys.path.append(dirname(sys.path[0]))
-from service_driver.project_generator import start_project
+from service_driver.project_generator import command
 
-start_project()
+command()

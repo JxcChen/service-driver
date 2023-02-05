@@ -17,8 +17,8 @@ import os
 group = click.Group()
 
 
-# @click.command('start')
-# @click.option('-n', '--project-name', required=True, help='project name')
+@click.command('start_project')
+@click.option('-n', '--project-name', required=True, help='project name')
 def start_project(project_name):
     """
     创建项目
@@ -76,5 +76,12 @@ class Template:
         return self.env.get_template(tpl_name).render(**kwargs)
 
 
-if __name__ == '__main__':
+group.add_command(start_project)
+
+
+def command():
     group.main()
+
+
+if __name__ == '__main__':
+    command()

@@ -9,7 +9,7 @@ with open('service_driver/_version.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1)))
 
-with open('requirements.txt.txt.txt') as f:
+with open('requirements.txt') as f:
     requirements = [line for line in f.read().splitlines() if line]
 
 setup(
@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'swagger_py_codegen=swagger_py_codegen:generate'
+            'service_driver=service_driver:command'
         ]
     },
     install_requires=requirements,
