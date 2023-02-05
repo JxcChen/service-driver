@@ -3,8 +3,10 @@
 # @Author   :CHNJX
 # @File     :testcase_demo.py
 # @Desc     :
-from service_driver.test_base import TestBase
+import os
 
+from service_driver.test_base import TestBase
+import sys
 
 class TestDemo(TestBase):
 
@@ -12,3 +14,7 @@ class TestDemo(TestBase):
         self.logger.info('aaaaa')
         self.replace_formal_str_2_actual('${randomaaa')
         assert 1 == 1
+
+    def test02(self):
+        bo = os.path.isdir('service_driver')
+        print(bo)

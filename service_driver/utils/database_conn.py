@@ -31,6 +31,8 @@ class DatabaseConn:
         if not self.conn:
             self.conn = pymysql.connect(charset='utf8', **database_config)
             self.cursor = self.conn.cursor()
+            self.conn.ping(reconnect=True)
+            self.cursor.execute(sql_str, params)
 
     def close_conn(self):
         if self.conn:

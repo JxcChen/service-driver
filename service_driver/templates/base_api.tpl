@@ -12,9 +12,8 @@ class BaseApi:
     headers = {}
     json_data = None
     base_uri = ''
-    base_dir = os.path.join(os.path.dirname(__file__),'..')
-    logger = Logger.getLogger("api",base_dir)
-
+    base_dir = os.path.join(os.path.dirname(__file__), '..')
+    logger = Logger.getLogger("api", base_dir)
 
     def req(self, method, url, headers=None, **kwargs):
         """
@@ -52,14 +51,15 @@ class BaseApi:
         if headers:
             self.headers.update(headers)
         try:
-            self.json_data = requests.request(method=method, url=self.base_uri + url, headers=self.headers,
-                                              **kwargs)
-            self.logger.info(f'请求结果：{self.json_data.text}')
+            resp = requests.request(method=method, url=self.base_uri + url, headers=self.headers,
+                                    **kwargs)
+            self.logger.info(f'请求结果：{resp.text}')
         except Exception as e:
             self.logger.error("请求接口错误: " + e.__str__())
-            return
-
-        return self.json_data.json()
+            raise e
+        json_data: dict = resp.json()
+        json_data.update({'status': resp.status_code, 'text': resp.text})
+        return json_data
 
     def get_req(self, **kwargs):
         """

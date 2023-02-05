@@ -3,38 +3,59 @@
 # @Author   :CHNJX
 # @File     :project_generator.py
 # @Desc     :项目创造器
+
+import sys
 from os.path import dirname, exists
 
+sys.path.append(dirname(sys.path[0]))
+
+import click as click
 from jinja2 import FileSystemLoader, Environment
 
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-TESTCASE_DIR = os.path.join(BASE_DIR, 'testcase')
-API_OBJECT_DIR = os.path.join(BASE_DIR, 'api_object')
+group = click.Group()
 
 
+# @click.command('start')
+# @click.option('-n', '--project-name', required=True, help='project name')
 def start_project(project_name):
     """
     创建项目
     :param project_name: 项目名称
     :return: None
     """
-    if not exists(TESTCASE_DIR):
-        os.mkdir(TESTCASE_DIR)
-    if not exists(API_OBJECT_DIR):
-        os.mkdir(API_OBJECT_DIR)
-    for dir_name in os.listdir(BASE_DIR):
-        cur_dir = os.path.join(BASE_DIR, dir_name)
-        with open(os.path.join(cur_dir, '__init__.py'), 'w') as file:
-            pass
-    generate_base_need()
+    if exists(project_name):
+        print(f'project {project_name} is already existed')
+        return 1
+    create_folder(project_name)
+    create_folder(os.path.join(project_name, 'testcase'))
+    create_folder(os.path.join(project_name, 'api_object'))
+    for dir_name in os.listdir(project_name):
+        cur_dir = os.path.join(project_name + '/' + dir_name, '__init__.py')
+        create_file(cur_dir)
+    generate_base_need(project_name)
 
 
-def generate_base_need():
+def create_folder(path):
+    os.makedirs(path)
+    print(f'create folder {path}')
+
+
+def create_file(file_path, file_content=""):
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(file_content)
+    print(f"created file: {file_path}")
+
+
+def generate_base_need(project_name):
     template = Template()
-    _write(template.get_content('base_api.tpl'), os.path.join(API_OBJECT_DIR, 'base_api.py'))
-    _write(template.get_content('base_testcase.tpl'), os.path.join(TESTCASE_DIR, 'test_base.py'))
+    api_object_dir = os.path.join(project_name, 'api_object')
+    testcase_dir = os.path.join(project_name, 'testcase')
+    _write(template.get_content('base_api.tpl'), os.path.join(api_object_dir, 'base_api.py'))
+    _write(template.get_content('api_demo.tpl'), os.path.join(api_object_dir, 'api_demo.py'))
+    _write(template.get_content('base_testcase.tpl'), os.path.join(testcase_dir, 'test_base.py'))
+    _write(template.get_content('testcase_demo.tpl'), os.path.join(testcase_dir, 'testcase_demo.py'))
 
 
 def _write(content, file_path):
@@ -55,6 +76,5 @@ class Template:
         return self.env.get_template(tpl_name).render(**kwargs)
 
 
-
 if __name__ == '__main__':
-    start_project('ss')
+    group.main()

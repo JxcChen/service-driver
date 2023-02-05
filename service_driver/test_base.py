@@ -15,5 +15,5 @@ class TestBase(BaseTestcase):
     logger = Logger.getLogger("testcase", base_dir)
 
     # 需要先获取数据库配置
-    # database = DatabaseConn(sql_config)
+    database = DatabaseConn(sql_config)
 
