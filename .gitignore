@@ -1,3 +1,4 @@
 service_driver/log
 service_driver/.pytest_cache
+.pytest_cache
 /venv/
