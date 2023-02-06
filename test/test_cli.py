@@ -1,7 +1,7 @@
 import os
 
 from service_driver.project_generator import start_project
-
+from service_driver.__main__ import absolute_import
 
 class TestProjectGenerator:
     def test_start_project(self):

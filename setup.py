@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import re
 import ast
-from setuptools import setup
+from setuptools import setup, find_packages
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
@@ -19,12 +19,12 @@ setup(
     author='CHNJX',
     author_email='360088940@qq.com',
     url='https://github.com/JxcChen/service-driver',
-    packages=['service_driver'],
+    packages=['service_driver','service_driver.utils'],
     package_data={'templates': ['service_driver/templates/*']},
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'service_driver=service_driver:command'
+            'sdrun=service_driver:command'
         ]
     },
     install_requires=requirements,
