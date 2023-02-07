@@ -27,6 +27,7 @@ def start_project(project_name):
         return 1
     create_folder(project_name)
     create_folder(join(project_name, 'testcase'))
+    create_folder(join(project_name, 'swagger'))
     create_folder(join(project_name, 'api_object'))
     for dir_name in listdir(project_name):
         cur_dir = join(project_name + '/' + dir_name, '__init__.py')

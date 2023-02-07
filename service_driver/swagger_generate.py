@@ -6,6 +6,7 @@
 import os
 import sys
 from os.path import dirname, exists, join
+
 sys.path.append(dirname(sys.path[0]))
 
 import codecs
@@ -17,12 +18,14 @@ from service_driver.tenplate import Template
 def generate(swagger_doc, api_dir=None):
     if not api_dir:
         api_dir = join(join(dirname(__file__), '..'), 'api_object')
+    if '/' not in swagger_doc:
+        swagger_doc = join(dirname(__file__), 'swagger/' + swagger_doc)
     swagger_data = load_swagger(swagger_doc)
     _generate_template_path(swagger_data['paths'])
     tag_path_dict = _generate_template_data(swagger_data)
     template = Template()
     for tag, paths in tag_path_dict.items():
-        content = template.get_content('api_object.tpl', tag=tag, paths=paths)
+        content = template.get_content('api.tpl', tag=tag, paths=paths)
         file_path = os.path.join(api_dir, tag + '.py')
         _write(content, file_path)
 
