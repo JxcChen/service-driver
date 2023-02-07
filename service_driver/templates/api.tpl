@@ -1,5 +1,4 @@
-from plan_cleaning.api_object.api.base_api import BaseApi
-from plan_cleaning.common.constant import Common
+from api_object.base_api import BaseApi
 
 class {{ tag }}(BaseApi):
 
