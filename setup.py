@@ -24,7 +24,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'sdrun=service_driver:command'
+            'sdrun=service_driver:cmd'
         ]
     },
     install_requires=requirements,
