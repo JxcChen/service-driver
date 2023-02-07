@@ -1,2 +1,3 @@
 from __future__ import absolute_import
-from .project_generator import command
+from .command import cmd
+from .swagger_generate import generate
