@@ -16,17 +16,18 @@ from service_driver.tenplate import Template
 
 
 def generate(swagger_doc, api_dir=None):
+    # root_dir = sys.path[0] if not sys.path[0].endswith(r'\venv\Scripts') else sys.path[0].replace(r'\venv\Scripts', '')
     if not api_dir:
-        api_dir = join(join(dirname(__file__), '..'), 'api_object')
-    if '/' not in swagger_doc:
-        swagger_doc = join(dirname(__file__), 'swagger/' + swagger_doc)
+        api_dir = 'api_object'
+    if '/' not in swagger_doc and '\\' not in swagger_doc:
+        swagger_doc = 'swagger/' + swagger_doc
     swagger_data = load_swagger(swagger_doc)
     _generate_template_path(swagger_data['paths'])
     tag_path_dict = _generate_template_data(swagger_data)
     template = Template()
     for tag, paths in tag_path_dict.items():
         content = template.get_content('api.tpl', tag=tag, paths=paths)
-        file_path = os.path.join(api_dir, tag + '.py')
+        file_path = os.path.join(api_dir, tag.lower() + '.py')
         _write(content, file_path)
 
 
@@ -73,15 +74,22 @@ def _transformation_params_list(params, json_params: list) -> list:
 
 def _generate_url(path) -> str:
     path_name_list = path.split('/')
-    if 'id' in path_name_list[-1]:
+    if 'id' in path_name_list[-1].lower() or '{' in path_name_list[-1]:
         path_name_list.pop(-1)
     return '/'.join(path_name_list)
 
 
 def _generate_name(path) -> str:
     path_name_list = path.split('/')
-    return path_name_list[-2].split('?')[0] if 'id' in path_name_list[-1] else \
+    return path_name_list[-2].split('?')[0] if 'id' in path_name_list[-1].lower() or '{' in path_name_list[-1] else \
         path_name_list[-1].split('?')[0]
+
+
+def _generate_url_param(path):
+    path_name_list: list[str] = path.split('/')
+    if 'id' in path_name_list[-1].lower() or '{' in path_name_list[-1]:
+        return path_name_list[-1].replace('{', '').replace('}', '')
+    return ''
 
 
 def _transformation_file(json_params) -> list:
@@ -101,6 +109,7 @@ def _generate_template_path(swagger_paths):
         value['params_list'] = _transformation_params_list(value['parameters'], value['json'])
         value['url'] = _generate_url(path)
         value['name'] = _generate_name(path)
+        value['url_param'] = _generate_url_param(path)
 
 
 def _generate_template_data(swagger_data) -> dict:
@@ -110,7 +119,7 @@ def _generate_template_data(swagger_data) -> dict:
         tag_name = tag_name.replace('/', '-', -1)
         tag_path_list = {name: path for name, path in swagger_data['paths'].items() if
                          path['tag'].replace('/', '-', -1) == tag_name}
-        tag_path_dict[tag_name] = tag_path_list
+        tag_path_dict[tag_name.capitalize()] = tag_path_list
     return tag_path_dict
 
 

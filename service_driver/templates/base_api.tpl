@@ -57,8 +57,11 @@ class BaseApi:
         except Exception as e:
             self.logger.error("请求接口错误: " + e.__str__())
             raise e
-        json_data: dict = resp.json()
-        json_data.update({'status': resp.status_code, 'text': resp.text})
+        try:
+            json_data: dict = resp.json()
+        except:
+            json_data = {}
+        json_data.update({'status': resp.status_code, 'text': resp.text, 'resp_time': resp.elapsed.total_seconds()})
         return json_data
 
     def get_req(self, **kwargs):

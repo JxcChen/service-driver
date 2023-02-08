@@ -1,5 +1,6 @@
 from api_object.base_api import BaseApi
 
+
 class {{ tag }}(BaseApi):
 
     {%- for key,path in paths.items() %}
@@ -21,7 +22,7 @@ class {{ tag }}(BaseApi):
         """
 
         req_data = {
-            "url": {% if key.endswith("id") %}f"{{path["url"]}}/{id}"{% else %}"{{key}}"{% endif %},
+            "url": {% if path["url_param"] %}f"{{path["url"]}}/{ {{path["url_param"]}} }"{% else %}f"{{key}}"{% endif %},
             "params": {
                 {%- for param in path["parameters"] %}
                 "{{param["name"]}}": {{param["name"]}}{%- if not loop.last %},{% else %}

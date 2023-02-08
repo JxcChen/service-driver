@@ -7,8 +7,8 @@
 import sys
 from os import listdir, makedirs
 from os.path import dirname, exists, join
-sys.path.append(dirname(sys.path[0]))
 
+sys.path.append(dirname(sys.path[0]))
 
 from service_driver.tenplate import Template
 import click as click
@@ -16,7 +16,7 @@ import click as click
 group = click.Group()
 
 
-def start_project(project_name):
+def project_generate(project_name):
     """
     创建项目
     :param project_name: 项目名称
@@ -30,6 +30,8 @@ def start_project(project_name):
     create_folder(join(project_name, 'swagger'))
     create_folder(join(project_name, 'api_object'))
     for dir_name in listdir(project_name):
+        if dir_name == 'swagger':
+            continue
         cur_dir = join(project_name + '/' + dir_name, '__init__.py')
         create_file(cur_dir)
     generate_base_need(project_name)
@@ -63,5 +65,6 @@ def _write(content, file_path):
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
+
 if __name__ == '__main__':
-    start_project('ss')
+    project_generate('ss')

@@ -11,7 +11,7 @@ import click as click
 sys.path.append(dirname(sys.path[0]))
 
 import os
-from service_driver.project_generator import create_folder, create_file, generate_base_need
+from service_driver.project_generator import project_generate
 from service_driver.swagger_generate import generate
 
 group = click.Group()
@@ -24,16 +24,7 @@ def start_project(project_name):
     创建项目
     :param project_name: 项目名称
     """
-    if exists(project_name):
-        print(f'project {project_name} is already existed')
-        return 1
-    create_folder(project_name)
-    create_folder(os.path.join(project_name, 'testcase'))
-    create_folder(os.path.join(project_name, 'api_object'))
-    for dir_name in os.listdir(project_name):
-        cur_dir = os.path.join(project_name + '/' + dir_name, '__init__.py')
-        create_file(cur_dir)
-    generate_base_need(project_name)
+    project_generate(project_name)
 
 
 @click.command('swagger2api')
@@ -66,11 +57,10 @@ def run(testcase, tag, reset):
     """
     command = f'pytest -v -s {testcase}'
     if reset == 'true':
-        if os.path.exists(os.path.join(sys.path[-1], 'allure-results')):
-            if 'win' in sys.platform:
-                subprocess.call(f'rmdir /Q /S allure-results', shell=True)
-            else:
-                subprocess.call('rmdir -rf ./allure-results', shell=True)
+        if 'win' in sys.platform:
+            subprocess.call(f'rmdir /Q /S allure-results', shell=True)
+        else:
+            subprocess.call(f'rmdir -rf allure-results', shell=True)
     if tag:
         command += f' -m {tag}'
     subprocess.call(command + ' --alluredir=./allure-results')

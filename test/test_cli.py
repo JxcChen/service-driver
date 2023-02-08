@@ -1,11 +1,16 @@
 import os
+from os.path import join, dirname
 
-from service_driver.project_generator import start_project
-from service_driver.__main__ import absolute_import
+from service_driver.project_generator import project_generate
+from service_driver.swagger_generate import generate
+
 
 class TestProjectGenerator:
     def test_start_project(self):
-        start_project('new_project')
+        project_generate('new_project')
         assert os.path.isdir(os.path.join('new_project', "api_object"))
         assert os.path.isdir(os.path.join('new_project', "testcase"))
 
+    def test_swagger_generate(self):
+        generate(join(join(dirname(__file__), '..'), 'test/swagger/swagger.json'),
+                 join(join(dirname(__file__), '..'), 'test/api_object'))
