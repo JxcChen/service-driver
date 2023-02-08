@@ -8,3 +8,4 @@ class TestProjectGenerator:
         start_project('new_project')
         assert os.path.isdir(os.path.join('new_project', "api_object"))
         assert os.path.isdir(os.path.join('new_project', "testcase"))
+

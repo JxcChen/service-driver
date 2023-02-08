@@ -3,9 +3,11 @@
 # @Author   :CHNJX
 # @File     :command.py
 # @Desc     :命令工具
+import subprocess
 import sys
 from os.path import dirname, exists
 import click as click
+
 sys.path.append(dirname(sys.path[0]))
 
 import os
@@ -48,8 +50,35 @@ def swagger2api(swagger_doc, api_dir):
     generate(swagger_doc, api_dir)
 
 
+@click.command('run')
+@click.option('-c', '--testcase',
+              required=True, help='testcase')
+@click.option('-t', '--tag',
+              required=False, help='testcase')
+@click.option('-r', '--reset', help='auto clear report', required=False, default='false',
+              type=click.Choice(['true', 'false']))
+def run(testcase, tag, reset):
+    """
+    swagger文档转换成api-object
+    :param reset: auto clear report （default=False）
+    :param tag: tag name
+    :param testcase: testcase
+    """
+    command = f'pytest -v -s {testcase}'
+    if reset == 'true':
+        if os.path.exists(os.path.join(sys.path[-1], 'allure-results')):
+            if 'win' in sys.platform:
+                subprocess.call(f'rmdir /Q /S allure-results', shell=True)
+            else:
+                subprocess.call('rmdir -rf ./allure-results', shell=True)
+    if tag:
+        command += f' -m {tag}'
+    subprocess.call(command + ' --alluredir=./allure-results')
+
+
 group.add_command(start_project)
 group.add_command(swagger2api)
+group.add_command(run)
 
 
 def cmd():
