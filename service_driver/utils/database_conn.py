@@ -11,7 +11,7 @@ from service_driver.utils.service_logger import Logger
 class DatabaseConn:
     conn = ''
     cursor = ''
-    logger = Logger.getLogger('testcase')
+
     def __init__(self, database_config):
         """
         :param database_config:
@@ -39,7 +39,6 @@ class DatabaseConn:
     def excuse_sql(self, sql_str, params=None):
         self.conn.ping(reconnect=True)
         self.cursor.execute(sql_str, params)
-        self.logger.info('执行sql语句: ' + sql_str)
         # 判断是否为查询语句
         if 'select' in sql_str:
             return self.cursor.fetchone()

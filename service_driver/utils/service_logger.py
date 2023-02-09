@@ -14,9 +14,7 @@ from datetime import datetime
 class Logger:
 
     @classmethod
-    def getLogger(cls, name, root_path=None, package_name="log") -> logging:
-        if not root_path:
-            root_path = os.path.join(os.path.dirname(__file__),'..')
+    def getLogger(cls, name, root_path, package_name="log") -> logging:
         logger = logging.getLogger(name)
         if logger.handlers:
             return logger

@@ -11,8 +11,6 @@ PLACEHOLDER_SUFFIX = '}'
 
 class Placeholder:
     # 声明占位符的前后缀
-    logger = Logger.getLogger('testcase')
-
     @classmethod
     def resolve_str(cls, text: str, parameter: dict):
         """
@@ -36,10 +34,8 @@ class Placeholder:
                         # 替换占位符
                         text = text.replace('${' + formal + '}', actual)
                         next_index = start_index + len(actual)
-                    else:
-                        cls.logger.info("Could not resolve placeholder '" + formal + "' in [" + text + "] ")
                 except Exception as e:
-                    cls.logger.error(
+                    raise ValueError(
                         "Could not resolve placeholder '" + formal + "' in [" + text + "]: " + e.__str__())
                 # 替换一次后 查看后续位置是否存在占位符  继续替换
                 start_index = text.find(PLACEHOLDER_PREFIX, next_index)

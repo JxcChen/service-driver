@@ -51,10 +51,15 @@ class BaseTestcase:
                 random_num = Fake.get_random_string(random_range)
                 # 将形参和实参存到map中
                 formal_map['random(' + str(random_range) + ')'] = random_num
-                return Placeholder.resolve_str(formal_str, formal_map)
+            elif type(random_range) is list:
+                random_num = Fake.get_range_random(int(random_range[0]), int(random_range[1]))
+                # 将形参和实参存到map中
+                formal_map['random(' + str(random_range[0]) + ',' + str(random_range[1]) + ')'] = random_num
+
             else:
                 self.logger.error('随机数占位符替换失败：' + formal_str)
                 return formal_str
+            return Placeholder.resolve_str(formal_str, formal_map)
         elif "${timeStamp}" in formal_str:
             # 获取时间戳
             ts = Fake.get_time_stamp()
