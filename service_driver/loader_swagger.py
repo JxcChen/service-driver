@@ -5,7 +5,7 @@
 # @Desc     :
 import codecs
 import json
-from os import listdir
+from os import path
 from os.path import isdir
 
 import six
@@ -46,7 +46,10 @@ def get_ref_filepath(filename, ref_file):
 def load_file(filename, spec_data):
     loader = get_loader(filename)
     with codecs.open(filename, 'r', 'utf-8') as f:
-        data = loader(f)
+        if filename.endswith('.json'):
+            data = loader(f)
+        else:
+            data = loader(f, yaml.Loader)
         # modify_spec_data(spec_data, data)
         spec_data.update(data)
         for field, values in six.iteritems(data):
