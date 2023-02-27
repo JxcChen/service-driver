@@ -5,7 +5,7 @@
 # @Desc     :
 import codecs
 import json
-from os import path
+from os import path, listdir
 from os.path import isdir
 
 import six
@@ -45,7 +45,7 @@ def get_ref_filepath(filename, ref_file):
 
 def load_file(filename, spec_data):
     loader = get_loader(filename)
-    with codecs.open(filename, 'r', 'utf-8') as f:
+    with open(filename, 'r', 'utf-8') as f:
         if filename.endswith('.json'):
             data = loader(f)
         else:

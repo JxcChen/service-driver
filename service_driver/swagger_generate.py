@@ -10,7 +10,6 @@ from os.path import dirname, exists, join
 
 sys.path.append(dirname(sys.path[0]))
 
-import codecs
 
 from service_driver.loader_swagger import load_swagger
 from service_driver.tenplate import Template
@@ -35,7 +34,7 @@ def _write(content, file_path):
     dir_ = dirname(file_path)
     if not exists(dir_):
         os.makedirs(dir_)
-    with codecs.open(file_path, 'w', 'utf-8') as f:
+    with open(file_path, 'w', 'utf-8') as f:
         f.write(content)
 
 
