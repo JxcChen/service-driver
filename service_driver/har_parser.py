@@ -3,17 +3,43 @@
 # @Author   :CHNJX
 # @File     :har_parser.py
 # @Desc     :
+import json
 import logging
 import os
+import sys
+
 from service_driver.writer_content import write
 from service_driver.tenplate import Template
 
 
 class HarParser:
 
-    def __init__(self, har_file_path, exclude_url):
+    def __init__(self, har_file_path, exclude_url=None):
         self.har_file = har_file_path
         self.exclude = exclude_url
+
+    def load_har_2_entry_json(self) -> str:
+        """
+        load har data
+        :return:
+            list: entries
+            [
+                {
+                    "request": {},
+                    "response": {}
+                },
+                {
+                    "request": {},
+                    "response": {}
+                }
+            ]
+        """
+        with open(self.har_file, 'r+', encoding='utf-8') as f:
+            try:
+                entry_json = json.loads(f.read())
+                return entry_json['log']['entries']
+            except (KeyError, TypeError):
+                sys.exit(1)
 
     def generate_testcase_steps(self, fmt_version) -> dict:
         """
@@ -21,7 +47,17 @@ class HarParser:
         :param fmt_version:
         :return:
         """
-        ...
+
+        def is_exclude_url(url, exclude_url: str) -> bool:
+            """查看是否为剔除的url"""
+            exclude_url_list = exclude_url.split(',')
+            for exclude in exclude_url_list:
+                if exclude and exclude in url:
+                    return True
+            return False
+
+        entry_json = self.load_har_2_entry_json()
+        print(entry_json)
 
     def _make_testcase(self, fmt_version: str) -> str:
         """
@@ -46,3 +82,8 @@ class HarParser:
         testcase_content = self._make_testcase(fmt_version)
         write(testcase_content, testcase_file_name)
         logging.info(f'完成{har_file_dir}的用例转换')
+
+
+if __name__ == '__main__':
+    har = HarParser("/Users/chnjx/PycharmProjects/service-driver/test/data/demo.har")
+    har.generate_testcase()

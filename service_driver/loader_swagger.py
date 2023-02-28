@@ -3,7 +3,6 @@
 # @Author   :CHNJX
 # @File     :loader_swagger.py
 # @Desc     :
-import codecs
 import json
 from os import path, listdir
 from os.path import isdir
@@ -18,7 +17,7 @@ def get_loader(filename):
     elif filename.endswith('.yml') or filename.endswith('.yaml'):
         loader = yaml.load
     else:
-        with codecs.open(filename, 'r', 'utf-8') as f:
+        with open(filename, 'r', 'utf-8') as f:
             contents = f.read()
             contents = contents.strip()
             if contents[0] in ['{', '[']:

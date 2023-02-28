@@ -19,8 +19,8 @@ class Fake:
         return random.Random().randint(num1, num2)
 
     @classmethod
-    def get_random_int(cls,num):
-        num1 = 1 * (num-1)
+    def get_random_int(cls, num):
+        num1 = 1 * (num - 1)
         num2 = int('9' * num)
         return random.Random().randint(num1, num2)
 
@@ -93,21 +93,20 @@ class Fake:
         """获取未来的日期"""
         return self.fake.future_datetime()
 
-    def get_customer_date(self,start_date:str, end_date:str):
+    def get_customer_date(self, start_date: str, end_date: str):
         """
         获取自定义范围的日期
         :param start_date:  开始时间 1y为往后一年  -1y为往前一年
         :param end_date:  结束时间
         :return:
         """
-        return self.fake.date_between(start_date=start_date,end_date=end_date)
+        return self.fake.date_between(start_date=start_date, end_date=end_date)
 
-    def get_customer_date_time(self,start_date:str, end_date:str):
+    def get_customer_date_time(self, start_date: str, end_date: str):
         """
         获取自定义范围的时间
         :param start_date:  开始时间 +1y为往后一年  -1y为往前一年
         :param end_date:  结束时间
         :return:
         """
-        return self.fake.date_time_between(start_date=start_date,end_date=end_date)
-
+        return self.fake.date_time_between(start_date=start_date, end_date=end_date)
