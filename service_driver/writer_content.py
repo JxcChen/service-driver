@@ -10,5 +10,5 @@ def write(content, file_path):
     dir_ = os.path.dirname(file_path)
     if not os.path.exists(dir_):
         os.makedirs(dir_)
-    with open(file_path, 'w', 'utf-8') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(content)

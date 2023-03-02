@@ -3,6 +3,7 @@
 # @Author   :CHNJX
 # @File     :har_parser.py
 # @Desc     :
+import base64
 import json
 import logging
 import os
@@ -12,7 +13,7 @@ from urllib.parse import urlparse
 
 from service_driver.writer_content import write
 from service_driver.tenplate import Template
-from service_driver import utils
+from service_driver import sd_utils
 
 # 忽略的请求头
 IGNORE_REQUEST_HEADERS = [
@@ -39,7 +40,7 @@ class HarParser:
 
     def __init__(self, har_file_path, exclude_url=None):
         self.har_file = har_file_path
-        self.exclude_url = exclude_url
+        self.exclude_url = exclude_url or ""
 
     def load_har_2_entry_json(self) -> list[dict]:
         """
@@ -63,6 +64,60 @@ class HarParser:
                 return entry_json['log']['entries']
             except (KeyError, TypeError):
                 sys.exit(1)
+
+    def __make_step_validate(self, step_dict, entry_json):
+        """
+        解析har数据 组装断言需要的数据
+        :return:
+            {
+                "validate":[
+                    {"equals": ['key1','expected1']}
+                    {"in": ['key2','expected2']}
+                ]
+            }
+        """
+        # 对响应状态码进行断言
+        step_dict["validate"].append(
+            {"equals": ["status_code", entry_json["response"].get("status")]}
+        )
+
+        resp_content_dict = entry_json['response'].get('content')
+
+        # 对请求头进行断言
+        headers = sd_utils.covert_list_to_dict(entry_json['response'].get('headers', []))
+        if 'Content-Type' in headers:
+            step_dict["validate"].append(
+                {"equals": ["headers.Content-Type", headers["Content-Type"]]}
+            )
+
+        text = resp_content_dict.get("text")
+        if not text:
+            return
+        mime_type: str = resp_content_dict.get("mimeType")
+        # 根据编码格式对text内容进行解码
+        if mime_type and mime_type.startswith('application/json'):
+            encoding = resp_content_dict.get('encoding')
+            if encoding and encoding == 'base64':
+                content = base64.b64decode(text).decode('utf-8')
+            else:
+                content = text
+            try:
+                json.loads(content)
+            except JSONDecodeError:
+                logging.warning(
+                    "响应无法转换成json格式: {}".format(content.encode("utf-8"))
+                )
+                return
+
+            if not isinstance(resp_content_dict, dict):
+                return
+            for key, value in resp_content_dict.items():
+                if isinstance(value, (dict, list)):
+                    continue
+
+                step_dict["json_validate"].append(
+                    {"equals": [key, value]}
+                )
 
     def __make_request_data(self, step_dict: dict, entry_json: dict):
         """
@@ -93,15 +148,15 @@ class HarParser:
         """
         method = entry_json['request'].get('method')
         # 判断请求是否通过body进行传输
-        if method in ['POST','PUT','PATCH']:
-            post_data = entry_json['request'].get('postData',{})
-            mimetype:str = post_data.get('mimeType')
+        if method in ['POST', 'PUT', 'PATCH']:
+            post_data = entry_json['request'].get('postData', {})
+            mimetype: str = post_data.get('mimeType')
 
             if 'text' in post_data:
                 data = post_data.get('text')
             else:
-                params = post_data.get('params',[])
-                data = utils.covert_list_to_dict(params)
+                params = post_data.get('params', [])
+                data = sd_utils.covert_list_to_dict(params)
             request_data_key = 'data'
             # 判断是表单还是json
             if not mimetype:
@@ -113,7 +168,7 @@ class HarParser:
                 except JSONDecodeError:
                     pass
             elif mimetype.startswith("application/x-www-form-urlencoded"):
-                data = utils.convert_x_www_form_to_dict(data)
+                data = sd_utils.convert_x_www_form_to_dict(data)
 
             step_dict['request'][request_data_key] = data
 
@@ -185,7 +240,7 @@ class HarParser:
                 }
         """
         # 将url携带的参数进行分离
-        url_params = utils.covert_list_to_dict(entry_json["request"].get("queryString", []))
+        url_params = sd_utils.covert_list_to_dict(entry_json["request"].get("queryString", []))
         url = entry_json['request'].get('url')
         if not url:
             logging.exception('请求缺少url信息')
@@ -224,17 +279,18 @@ class HarParser:
         step_dict = {
             "name": "",
             "request": {},
-            "validate": []
+            "validate": [],
+            "json_validate": [],
         }
         self.__make_request_url(step_dict, entry_json)
         self.__make_request_headers(step_dict, entry_json)
         self.__make_request_method(step_dict, entry_json)
         self.__make_request_data(step_dict, entry_json)
-        self.__make_request_validate(step_dict, entry_json)
+        self.__make_step_validate(step_dict, entry_json)
 
         return step_dict
 
-    def generate_testcase_steps(self, fmt_version) -> dict:
+    def generate_testcase_steps(self, fmt_version) -> list:
         """
         封装测试用例步骤
         :param fmt_version:
@@ -243,7 +299,7 @@ class HarParser:
 
         def is_exclude_url(url, exclude_url: str) -> bool:
             """查看是否为剔除的url"""
-            exclude_url_list = exclude_url.split(',')
+            exclude_url_list = exclude_url.split('|')
             for exclude in exclude_url_list:
                 if exclude and exclude in url:
                     return True
@@ -257,16 +313,24 @@ class HarParser:
             if is_exclude_url(url, self.exclude_url):
                 continue
             test_steps.append(self._gen_step(entry))
+        return test_steps
 
-    def _make_testcase(self, fmt_version: str) -> str:
+    def _make_testcase(self, case_name: str, fmt_version: str) -> str:
         """
         :param fmt_version: 用例版本
         :return: 通过模板对用例转换后的内容
         """
         # 先把需要的用例步骤进行解析
         testcase_steps = self.generate_testcase_steps(fmt_version)
+        testcase = {
+                    'model_name': case_name.capitalize(),
+                    'case_name': case_name,
+                    'testcase_steps': testcase_steps
+                    }
         temp = Template()
-        return temp.get_content('har2case.tpl', **testcase_steps)
+
+        return temp.get_content('har2case.tpl', **testcase)
+
 
     def generate_testcase(self, fmt_version: str = 'v1'):
         """
@@ -278,11 +342,11 @@ class HarParser:
         har_file_dir = os.path.splitext(self.har_file)[0]
         testcase_file_name = f'{har_file_dir}.py'
         logging.info('开始转换测试用例')
-        testcase_content = self._make_testcase(fmt_version)
+        testcase_content = self._make_testcase(fmt_version, har_file_dir.split('/')[-1])
         write(testcase_content, testcase_file_name)
         logging.info(f'完成{har_file_dir}的用例转换')
 
 
 if __name__ == '__main__':
-    har = HarParser("/Users/chnjx/PycharmProjects/service-driver/test/data/demo.har")
+    har = HarParser(r"G:/pythonProject/service-driver/test/data/demo2.har")
     har.generate_testcase()

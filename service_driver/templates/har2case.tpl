@@ -1,34 +1,52 @@
-class Test{{case_name}}:
+import requests
+from jsonpath import jsonpath
+
+class Test{{model_name}}:
 
     def setup_class(self):
         pass
 
-    def test_{{case_name}}:
-        {%- for step in path["test_steps"] %}
+    def test_{{case_name}}(self):
+        {%- for step in testcase_steps %}
+        # {{step['name']}}
         req_data = {
-            "url": {% if step["url_param"] %}f"{{path["url"]}}/{ {{path["url_param"]}} }"{% else %}f"{{key}}"{% endif %},
-            "params": {
-                {%- for param in path["parameters"] %}
-                "{{param["name"]}}": {{param["name"]}}{%- if not loop.last %},{% else %}
-                {% endif %}
-                {%- endfor -%}
-            },
-            "json": {
-                {%- for param_name in path["json"] %}
-                "{{param_name}}": {{param_name}}{%- if not loop.last %},{% else %}
-                {% endif %}
-                {%- endfor -%}
-            },
-            "files": {
-                {%- for file_name in path["files"] %}
-                "{{file_name}}": open({{file_name}}, "rb"),{%- if not loop.last %},{% else %}
-                {% endif %}
-                {%- endfor -%}
-            }
+            "url": "{{step['request']['url']}}",
+            "method": "{{step['request']['method']}}",
+            {%- if step['request']['params'] -%}
+            'params': {{step['request']['params']}},
+            {% endif %}
+            {%- if step['request']['data'] -%}
+            'data': {{step['request']['data']}},
+            {% endif %}
+            {%- if step['request']['json'] -%}
+            'json': {{step['request']['json']}},
+            {% endif %}
+            {% if step['request']['headers'] %}
+            'headers': {{step['request']['headers']}},
+            {% endif %}
         }
-        resp = self.req(method="{{path["method"]}}", **req_data)
-        {%- for param_name in path["json"] %}
-        :param {{param_name}}:
-        {%- if loop.last %}
+        resp = requests.request(**req_data)
+        # 断言
+        {% for valid in step['validate'] %}
+        {%- for key,value in valid.items() -%}
+        {%- if key=='equals' -%}
+        assert resp.{{value[0]}} == "{{value[1]}}"
+        {% else %}
+        assert {{value[0]}} in "{{value[1]}}"
         {% endif %}
+        {%- endfor -%}
+        {%- endfor -%}
+        {% if step['json_validate'] %}
+        json_resp = resp.json()
+        {% for valid in step['json_validate'] %}
+        {%- for key,value in valid.items() -%}
+        {%- if key=='equals' -%}
+        assert json_resp['{{value[0]}}'] == "{{value[1]}}"
+        {% else %}
+        assert json_resp['{{value[0]}}'] == "{{value[1]}}"
+        {% endif %}
+        {%- endfor -%}
+        {%- endfor -%}
+        {% endif %}
+
         {%- endfor -%}
