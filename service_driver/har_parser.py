@@ -348,5 +348,5 @@ class HarParser:
 
 
 if __name__ == '__main__':
-    har = HarParser(r"G:/pythonProject/service-driver/test/data/demo2.har")
+    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/task_list.har")
     har.generate_testcase()
