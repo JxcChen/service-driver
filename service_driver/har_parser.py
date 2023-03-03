@@ -32,7 +32,14 @@ IGNORE_REQUEST_HEADERS = [
     ":authority",
     ":method",
     ":scheme",
-    ":path"
+    ":path",
+    "sec-ch-ua",
+    'sec-ch-ua-platform',
+    'sec-fetch-dest',
+    'sec-fetch-mode',
+    'sec-fetch-site',
+    'x-requested-with',
+    'sec-ch-ua-mobile'
 ]
 
 
@@ -86,8 +93,8 @@ class HarParser:
         # 对请求头进行断言
         headers = sd_utils.covert_list_to_dict(entry_json['response'].get('headers', []))
         if 'Content-Type' in headers:
-            step_dict["validate"].append(
-                {"equals": ["headers.Content-Type", headers["Content-Type"]]}
+            step_dict["header_validate"].append(
+                {"equals": ["Content-Type", headers["Content-Type"]]}
             )
 
         text = resp_content_dict.get("text")
@@ -102,19 +109,20 @@ class HarParser:
             else:
                 content = text
             try:
-                json.loads(content)
+                resp_content_json = json.loads(content)
             except JSONDecodeError:
                 logging.warning(
                     "响应无法转换成json格式: {}".format(content.encode("utf-8"))
                 )
                 return
 
-            if not isinstance(resp_content_dict, dict):
+            if not isinstance(resp_content_json, dict):
                 return
-            for key, value in resp_content_dict.items():
+            for key, value in resp_content_json.items():
                 if isinstance(value, (dict, list)):
                     continue
-
+                if key == 'timestamp':
+                    continue
                 step_dict["json_validate"].append(
                     {"equals": [key, value]}
                 )
@@ -281,6 +289,7 @@ class HarParser:
             "request": {},
             "validate": [],
             "json_validate": [],
+            "header_validate": []
         }
         self.__make_request_url(step_dict, entry_json)
         self.__make_request_headers(step_dict, entry_json)
@@ -342,11 +351,15 @@ class HarParser:
         har_file_dir = os.path.splitext(self.har_file)[0]
         testcase_file_name = f'{har_file_dir}.py'
         logging.info('开始转换测试用例')
-        testcase_content = self._make_testcase(fmt_version, har_file_dir.split('/')[-1])
+        if '/' in har_file_dir:
+            case_name = har_file_dir.split('/')[-1]
+        elif '\\' in har_file_dir:
+            case_name = har_file_dir.split('\\')[-1]
+        testcase_content = self._make_testcase(case_name, fmt_version)
         write(testcase_content, testcase_file_name)
         logging.info(f'完成{har_file_dir}的用例转换')
 
 
 if __name__ == '__main__':
-    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/task_list.har")
+    har = HarParser(r"G:\pythonProject\service-driver\test\data\demo2.har")
     har.generate_testcase()
