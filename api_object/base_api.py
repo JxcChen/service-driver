@@ -1,3 +1,8 @@
+# -*- coding:utf-8 -*-
+# @Time     :2023/3/4 8:30 上午
+# @Author   :CHNJX
+# @File     :base_api.py
+# @Desc     :
 import requests
 
 import os

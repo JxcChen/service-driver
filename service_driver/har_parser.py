@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 from json import JSONDecodeError
+from os.path import join, dirname
 from urllib.parse import urlparse
 
 from service_driver.writer_content import write
@@ -332,34 +333,36 @@ class HarParser:
         # 先把需要的用例步骤进行解析
         testcase_steps = self.generate_testcase_steps(fmt_version)
         testcase = {
-                    'model_name': case_name.capitalize(),
-                    'case_name': case_name,
-                    'testcase_steps': testcase_steps
-                    }
+            'model_name': case_name.capitalize(),
+            'case_name': case_name,
+            'testcase_steps': testcase_steps
+        }
         temp = Template()
 
         return temp.get_content('har2case.tpl', **testcase)
 
-
-    def generate_testcase(self, fmt_version: str = 'v1'):
+    def generate_testcase(self, fmt_version: str = 'v1', testcase_path: str = 'testcase'):
         """
         将har文件转换成测试用例
+        :param testcase_path: 用例存放地址 默认放在testcase目录 需要存在与TestBase统一目录
         :param fmt_version: 用例版本
         """
         # 1 先获取文输出文件名
         # 切割文件和扩展名
         har_file_dir = os.path.splitext(self.har_file)[0]
-        testcase_file_name = f'{har_file_dir}.py'
+
         logging.info('开始转换测试用例')
+        case_name = ''
         if '/' in har_file_dir:
             case_name = har_file_dir.split('/')[-1]
         elif '\\' in har_file_dir:
             case_name = har_file_dir.split('\\')[-1]
+        testcase_path = os.path.join(testcase_path, case_name + '.py')
         testcase_content = self._make_testcase(case_name, fmt_version)
-        write(testcase_content, testcase_file_name)
+        write(testcase_content, testcase_path)
         logging.info(f'完成{har_file_dir}的用例转换')
 
 
 if __name__ == '__main__':
-    har = HarParser(r"G:\pythonProject\service-driver\test\data\demo2.har")
-    har.generate_testcase()
+    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/add_contract.har")
+    har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
