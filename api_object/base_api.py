@@ -52,6 +52,7 @@ class BaseApi:
         :param cert: (optional) if String, path to ssl client cert file (.pem). If Tuple, ('cert', 'key') pair.
 
         """
+        url = 'uasd/asduasdasd/'
         self.logger.info(f"======请求接口地址：{url}======请求方式：{method}======请求数据{kwargs.__str__()}")
         if headers:
             self.headers.update(headers)

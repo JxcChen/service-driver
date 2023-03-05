@@ -3,10 +3,12 @@
 # @Author   :CHNJX
 # @File     :har_parser.py
 # @Desc     :
+import ast
 import base64
 import json
 import logging
 import os
+import re
 import sys
 from json import JSONDecodeError
 from os.path import join, dirname
@@ -46,9 +48,10 @@ IGNORE_REQUEST_HEADERS = [
 
 class HarParser:
 
-    def __init__(self, har_file_path, exclude_url=None):
+    def __init__(self, har_file_path, exclude_url=None, api_object=None):
         self.har_file = har_file_path
         self.exclude_url = exclude_url or ""
+        self.api_object = api_object
 
     def load_har_2_entry_json(self) -> list[dict]:
         """
@@ -338,8 +341,41 @@ class HarParser:
             'testcase_steps': testcase_steps
         }
         temp = Template()
-
+        if self.api_object:
+            self.generate_api_case(testcase_steps)
+            return temp.get_content('har2api_case.tpl', **testcase)
         return temp.get_content('har2case.tpl', **testcase)
+
+    def find_object_func(self, url: str, method: str) -> dict:
+        """
+        根据url和请求方法获取到对应的接口
+        :param url:
+        :param method:
+        :return:
+        """
+        url = url.split('/')[-1]
+        if not os.path.isfile(self.api_object):
+            logging.exception('api-object 路径有误')
+            sys.exit(1)
+        api_class = ''
+        func_name = ''
+        with open(self.api_object, 'r', encoding='utf-8') as f:
+            cd = ast.parse(f.read())
+            for item in cd.body:
+                if isinstance(item, ast.ClassDef) and item.body:
+                    for func in item.body:
+                        if isinstance(func, ast.FunctionDef):
+                            func_str = ast.dump(func)
+                            if url in func_str and method in func_str:
+                                api_class = re.search("name='(.*?)'", ast.dump(item)).group(1)
+                                func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
+        return {'api_class': api_class, 'func_name': func_name}
+
+    def generate_api_case(self, testcase_steps):
+        for step in testcase_steps:
+            url = step['url']
+            method = step['method']
+            step.update(self.find_object_func(url, method))
 
     def generate_testcase(self, fmt_version: str = 'v1', testcase_path: str = 'testcase'):
         """
