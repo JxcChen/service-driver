@@ -54,6 +54,7 @@ class HarParser:
         self.api_object = api_object
         self.api_class = ''
         self.func_name = ''
+        self.module_dir = ''
 
     def load_har_2_entry_json(self) -> list[dict]:
         """
@@ -351,18 +352,19 @@ class HarParser:
     def find_object_func(self, url: str, method: str) -> dict:
         """
         根据url和请求方法获取到对应的接口
-        :param url:
-        :param method:
-        :return:
+        :param url: 接口路径
+        :param method: 请求方法
+        :return: {'api_class': self.api_class, 'func_name': self.func_name, 'module_dir': self.module_dir}
         """
         url = url.split('/')[-1]
         if not os.path.isfile(self.api_object):
             logging.exception('api-object 路径有误')
             sys.exit(1)
         self.travel_api_object(self.api_object, url, method)
-        api_func = {'api_class': self.api_class, 'func_name': self.func_name}
+        api_func = {'api_class': self.api_class, 'func_name': self.func_name, 'module_dir': self.module_dir}
         self.api_class = ''
         self.func_name = ''
+        self.module_dir = ''
         return api_func
 
     def travel_api_object(self, api, url, method):
@@ -371,6 +373,18 @@ class HarParser:
             return
         if os.path.isfile(self.api_object):
             self.api_class, self.func_name = sd_utils.get_class_and_func(api, url, method)
+            if self.api_class and self.func_name:
+                file_path = re.search('api_object/(.*?)', api).group(1)
+                # 获取包路径
+                file_path_list = ''
+                if '/' in file_path:
+                    file_path_list = file_path.split('/')
+                if '\\' in file_path:
+                    file_path_list = file_path.split('\\')
+                file_path_list[-1].replace('.py', '')
+                self.module_dir = 'api_object' + '.'.join(file_path_list)
+
+
         elif os.path.isdir(api):
             for api_file in os.listdir(api):
                 os.path.join(api, api_file)
