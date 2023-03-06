@@ -3,6 +3,7 @@
 # @Author   :CHNJX
 # @File     :sd_utils.py
 # @Desc     :public utils
+import ast
 from urllib.parse import unquote
 
 
@@ -41,3 +42,20 @@ def convert_x_www_form_to_dict(form_data: str):
         return res_dict
     else:
         return form_data
+
+
+def get_class_and_func(api_file, url, method) -> tuple:
+    api_class = ''
+    func_name = ''
+    with open(api_file, 'r', encoding='utf-8') as f:
+        cd = ast.parse(f.read())
+        for item in cd.body:
+            if isinstance(item, ast.ClassDef) and item.body:
+                for func in item.body:
+                    if isinstance(func, ast.FunctionDef):
+                        func_str = ast.dump(func)
+                        if url in func_str and method in func_str:
+                            api_class = re.search("name='(.*?)'", ast.dump(item)).group(1)
+                            func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
+                            break
+    return api_class, func_name

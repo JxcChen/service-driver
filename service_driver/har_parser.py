@@ -52,6 +52,8 @@ class HarParser:
         self.har_file = har_file_path
         self.exclude_url = exclude_url or ""
         self.api_object = api_object
+        self.api_class = ''
+        self.func_name = ''
 
     def load_har_2_entry_json(self) -> list[dict]:
         """
@@ -357,19 +359,22 @@ class HarParser:
         if not os.path.isfile(self.api_object):
             logging.exception('api-object 路径有误')
             sys.exit(1)
-        api_class = ''
-        func_name = ''
-        with open(self.api_object, 'r', encoding='utf-8') as f:
-            cd = ast.parse(f.read())
-            for item in cd.body:
-                if isinstance(item, ast.ClassDef) and item.body:
-                    for func in item.body:
-                        if isinstance(func, ast.FunctionDef):
-                            func_str = ast.dump(func)
-                            if url in func_str and method in func_str:
-                                api_class = re.search("name='(.*?)'", ast.dump(item)).group(1)
-                                func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
-        return {'api_class': api_class, 'func_name': func_name}
+        self.travel_api_object(self.api_object, url, method)
+        api_func = {'api_class': self.api_class, 'func_name': self.func_name}
+        self.api_class = ''
+        self.func_name = ''
+        return api_func
+
+    def travel_api_object(self, api, url, method):
+        """遍历目录获取对应的api"""
+        if self.api_class or self.func_name:
+            return
+        if os.path.isfile(self.api_object):
+            self.api_class, self.func_name = sd_utils.get_class_and_func(api, url, method)
+        elif os.path.isdir(api):
+            for api_file in os.listdir(api):
+                os.path.join(api, api_file)
+                self.travel_api_object(os.path.join(api, api_file), url, method)
 
     def generate_api_case(self, testcase_steps):
         for step in testcase_steps:
@@ -398,7 +403,6 @@ class HarParser:
         write(testcase_content, testcase_path)
         logging.info(f'完成{har_file_dir}的用例转换')
 
-
-if __name__ == '__main__':
-    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/add_contract.har")
-    har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
+    if __name__ == '__main__':
+        har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/add_contract.har")
+        har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
