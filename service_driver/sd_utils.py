@@ -5,7 +5,7 @@
 # @Desc     :public utils
 import ast
 from urllib.parse import unquote
-
+import re
 
 def covert_list_to_dict(list_data):
     """
@@ -54,7 +54,7 @@ def get_class_and_func(api_file, url, method) -> tuple:
                 for func in item.body:
                     if isinstance(func, ast.FunctionDef):
                         func_str = ast.dump(func)
-                        if url in func_str and method in func_str:
+                        if url in func_str and method.lower() in func_str:
                             api_class = re.search("name='(.*?)'", ast.dump(item)).group(1)
                             func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
                             break

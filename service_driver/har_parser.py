@@ -48,13 +48,15 @@ IGNORE_REQUEST_HEADERS = [
 
 class HarParser:
 
-    def __init__(self, har_file_path, exclude_url=None, api_object=None):
+    def __init__(self, har_file_path: str, exclude_url: str = None, api_object: str = None):
         self.har_file = har_file_path
         self.exclude_url = exclude_url or ""
-        self.api_object = api_object
+
         self.api_class = ''
         self.func_name = ''
-        self.module_dir = ''
+        self.module_dir = []
+        if api_object:
+            self.api_object = api_object.replace('\\', '/', -1)
 
     def load_har_2_entry_json(self) -> list[dict]:
         """
@@ -346,6 +348,7 @@ class HarParser:
         temp = Template()
         if self.api_object:
             self.generate_api_case(testcase_steps)
+            testcase['module_dir_list'] = set(self.module_dir)
             return temp.get_content('har2api_case.tpl', **testcase)
         return temp.get_content('har2case.tpl', **testcase)
 
@@ -356,34 +359,29 @@ class HarParser:
         :param method: 请求方法
         :return: {'api_class': self.api_class, 'func_name': self.func_name, 'module_dir': self.module_dir}
         """
-        url = url.split('/')[-1]
-        if not os.path.isfile(self.api_object):
+        url_list = url.split('/')
+        url = '/'.join([url_list[-2], url_list[-1]])
+        if not os.path.exists(self.api_object):
             logging.exception('api-object 路径有误')
             sys.exit(1)
         self.travel_api_object(self.api_object, url, method)
-        api_func = {'api_class': self.api_class, 'func_name': self.func_name, 'module_dir': self.module_dir}
+        api_func = {'api_class': self.api_class, 'func_name': self.func_name}
         self.api_class = ''
         self.func_name = ''
-        self.module_dir = ''
         return api_func
 
     def travel_api_object(self, api, url, method):
         """遍历目录获取对应的api"""
         if self.api_class or self.func_name:
             return
-        if os.path.isfile(self.api_object):
+        if os.path.isfile(api):
+            api = api.replace('\\', '/', -1)
             self.api_class, self.func_name = sd_utils.get_class_and_func(api, url, method)
             if self.api_class and self.func_name:
-                file_path = re.search('api_object/(.*?)', api).group(1)
+                file_path = re.search('api_object/(.*?).py', api).group(1)
                 # 获取包路径
-                file_path_list = ''
-                if '/' in file_path:
-                    file_path_list = file_path.split('/')
-                if '\\' in file_path:
-                    file_path_list = file_path.split('\\')
-                file_path_list[-1].replace('.py', '')
-                self.module_dir = 'api_object' + '.'.join(file_path_list)
-
+                file_path_list = file_path.split('/') if '/' in file_path else [file_path]
+                self.module_dir.append('api_object.' + '.'.join(file_path_list))
 
         elif os.path.isdir(api):
             for api_file in os.listdir(api):
@@ -391,9 +389,14 @@ class HarParser:
                 self.travel_api_object(os.path.join(api, api_file), url, method)
 
     def generate_api_case(self, testcase_steps):
+        """
+        转换成api_object 模式的用例步骤
+        :param testcase_steps:
+        :return:
+        """
         for step in testcase_steps:
-            url = step['url']
-            method = step['method']
+            url = step['request']['url']
+            method = step['request']['method']
             step.update(self.find_object_func(url, method))
 
     def generate_testcase(self, fmt_version: str = 'v1', testcase_path: str = 'testcase'):
@@ -417,6 +420,8 @@ class HarParser:
         write(testcase_content, testcase_path)
         logging.info(f'完成{har_file_dir}的用例转换')
 
-    if __name__ == '__main__':
-        har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/add_contract.har")
-        har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
+
+if __name__ == '__main__':
+    har = HarParser(r"G:\pythonProject\service-driver\test\data\task_list.har",
+                    api_object=r'G:\pythonProject\service-driver\api_object')
+    har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))

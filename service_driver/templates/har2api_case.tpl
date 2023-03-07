@@ -1,7 +1,9 @@
 from api_object.base_api import BaseApi
 from jsonpath import jsonpath
 from testcase.base_testcase import TestBase
-from api_object import
+{%- for module in module_dir_list %}
+from {{module}} import *
+{%- endfor %}
 
 
 class Test{{model_name}}(TestBase):
@@ -13,7 +15,7 @@ class Test{{model_name}}(TestBase):
         self.logger.info('用例名称：{{case_name}}')
         {%- for step in testcase_steps %}
         self.logger.info('测试步骤：{{step['name']}}')
-        {% if api_class and func_name %}
+        {% if step['api_class'] and step['func_name'] %}
         request_data = {}
         {%- if step['request']['params'] %}
         request_data.update({{step['request']['params']}})
@@ -24,6 +26,7 @@ class Test{{model_name}}(TestBase):
         {%- if step['request']['json'] %}
         request_data.update({{step['request']['json']}})
         {% endif %}
+        resp = {{step['api_class']}}.{{step['func_name']}}(**request_data)
         {% else %}
         req_data = {
             "url": "{{step['request']['url']}}",
@@ -42,9 +45,7 @@ class Test{{model_name}}(TestBase):
             {% endif -%}
         }
         resp = self.api.req(**req_data)
-        {% endif %}
-
-        resp = {{api_class}}().{{func_name}}(**request_data)
+        {%- endif -%}
 
         # 断言
         {% for valid in step['validate'] %}
