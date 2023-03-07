@@ -422,6 +422,6 @@ class HarParser:
 
 
 if __name__ == '__main__':
-    har = HarParser(r"G:\pythonProject\service-driver\test\data\task_list.har",
-                    api_object=r'G:\pythonProject\service-driver\api_object')
+    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/point_type.har",
+                    api_object=r'/Users/chnjx/PycharmProjects/service-driver/api_object')
     har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
