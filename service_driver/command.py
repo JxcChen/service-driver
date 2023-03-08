@@ -10,9 +10,8 @@ import click as click
 
 sys.path.append(dirname(sys.path[0]))
 
-import os
-from service_driver.project_generator import project_generate
-from service_driver.swagger_generate import generate
+from service_driver.project_generator import ProjectGenerator
+from service_driver.swagger_generate import SwaggerGenerator
 
 group = click.Group()
 
@@ -24,7 +23,7 @@ def start_project(project_name):
     创建项目
     :param project_name: 项目名称
     """
-    project_generate(project_name)
+    ProjectGenerator().project_generate(project_name)
 
 
 @click.command('swagger2api')
@@ -38,7 +37,7 @@ def swagger2api(swagger_doc, api_dir):
     :param swagger_doc: swagger.json 文件
     :param api_dir:  api存放路径 非必填
     """
-    generate(swagger_doc, api_dir)
+    SwaggerGenerator().generate(swagger_doc, api_dir)
 
 
 @click.command('run')

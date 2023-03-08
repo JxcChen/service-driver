@@ -14,7 +14,6 @@ from json import JSONDecodeError
 from os.path import join, dirname
 from urllib.parse import urlparse
 
-from service_driver.writer_content import write
 from service_driver.tenplate import Template
 from service_driver import sd_utils
 
@@ -417,7 +416,7 @@ class HarParser:
             case_name = har_file_dir.split('\\')[-1]
         testcase_path = os.path.join(testcase_path, case_name + '.py')
         testcase_content = self._make_testcase(case_name, fmt_version)
-        write(testcase_content, testcase_path)
+        sd_utils.write(testcase_content, testcase_path)
         logging.info(f'完成{har_file_dir}的用例转换')
 
 

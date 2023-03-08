@@ -4,8 +4,11 @@
 # @File     :sd_utils.py
 # @Desc     :public utils
 import ast
+from os import makedirs
+from os.path import exists, dirname
 from urllib.parse import unquote
 import re
+
 
 def covert_list_to_dict(list_data):
     """
@@ -59,3 +62,23 @@ def get_class_and_func(api_file, url, method) -> tuple:
                             func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
                             break
     return api_class, func_name
+
+
+def create_folder(path):
+    makedirs(path)
+    print(f'create folder {path}')
+
+
+def create_file(file_path, file_content=""):
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(file_content)
+    print(f"created file: {file_path}")
+
+
+def write(content, file_path):
+    dir_ = dirname(file_path)
+    if not exists(dir_):
+        makedirs(dir_)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+
