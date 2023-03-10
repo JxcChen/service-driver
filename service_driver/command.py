@@ -8,6 +8,8 @@ import sys
 from os.path import dirname, exists
 import click as click
 
+from service_driver.har_parser import HarParser
+
 sys.path.append(dirname(sys.path[0]))
 
 from service_driver.project_generator import ProjectGenerator
@@ -65,9 +67,21 @@ def run(testcase, tag, reset):
     subprocess.call(command + ' --alluredir=./allure-results')
 
 
+@click.command('har2case')
+@click.option('-h', '--har',
+              required=True, help='har file path')
+@click.option('-a', '--api',
+              required=False, help='api object dir', default=None)
+@click.option('-t', '--testcase', help='testcase dir', required=False,default='testcase')
+def har2case(har, api, testcase):
+    hp = HarParser(har_file_path=har,api_object=api)
+    hp.generate_testcase(testcase_path=testcase)
+
+
 group.add_command(start_project)
 group.add_command(swagger2api)
 group.add_command(run)
+group.add_command(har2case)
 
 
 def cmd():

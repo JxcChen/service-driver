@@ -50,7 +50,6 @@ class HarParser:
     def __init__(self, har_file_path: str, exclude_url: str = None, api_object: str = None):
         self.har_file = har_file_path
         self.exclude_url = exclude_url or ""
-
         self.api_class = ''
         self.func_name = ''
         self.module_dir = []
@@ -154,13 +153,13 @@ class HarParser:
                     "response": {...}
                 }
 
-            Returns:
-                {
-                    "request": {
-                        "method": "POST",
-                        "data": {"v": "1", "w": "2"}
-                    }
+        :returns:
+            {
+                "request": {
+                    "method": "POST",
+                    "data": {"v": "1", "w": "2"}
                 }
+            }
         """
         method = entry_json['request'].get('method')
         # 判断请求是否通过body进行传输
@@ -201,20 +200,20 @@ class HarParser:
     def __make_request_headers(self, step_dict: dict, entry_json: dict):
         """
         获取har中对应header数据
-           :param entry_json:
-               entry_json (dict):
-                   {
-                       "request": {
-                           "headers": [
-                               {"name": "Host", "value": "httprunner.top"},
-                               {"name": "Content-Type", "value": "application/json"},
-                               {"name": "User-Agent", "value": "iOS/10.3"}
-                           ],
-                       },
-                       "response": {}
-                   }
+        :param entry_json:
+           entry_json (dict):
+               {
+                   "request": {
+                       "headers": [
+                           {"name": "Host", "value": "httprunner.top"},
+                           {"name": "Content-Type", "value": "application/json"},
+                           {"name": "User-Agent", "value": "iOS/10.3"}
+                       ],
+                   },
+                   "response": {}
+               }
 
-           Returns:
+           :return:
                {
                    "request": {
                        headers: {"Content-Type": "application/json"}
@@ -246,14 +245,14 @@ class HarParser:
                         "response": {}
                     }
 
-            Returns:
-                {
-                    "name: "/home",
-                    "request": {
-                        url: "https://httprunner.top/home",
-                        params: {"v": "1", "w": "2"}
-                    }
+        :return:
+            {
+                "name: "/home",
+                "request": {
+                    url: "https://httprunner.top/home",
+                    params: {"v": "1", "w": "2"}
                 }
+            }
         """
         # 将url携带的参数进行分离
         url_params = sd_utils.covert_list_to_dict(entry_json["request"].get("queryString", []))
@@ -414,13 +413,11 @@ class HarParser:
             case_name = har_file_dir.split('/')[-1]
         elif '\\' in har_file_dir:
             case_name = har_file_dir.split('\\')[-1]
-        testcase_path = os.path.join(testcase_path, case_name + '.py')
+        testcase_path = os.path.join(testcase_path, 'test_'+case_name + '.py')
         testcase_content = self._make_testcase(case_name, fmt_version)
         sd_utils.write(testcase_content, testcase_path)
         logging.info(f'完成{har_file_dir}的用例转换')
 
 
 if __name__ == '__main__':
-    har = HarParser(r"/Users/chnjx/PycharmProjects/service-driver/test/data/point_type.har",
-                    api_object=r'/Users/chnjx/PycharmProjects/service-driver/api_object')
-    har.generate_testcase(testcase_path=join(join(dirname(__file__), '..'), 'testcase'))
+    pass

@@ -1,6 +1,6 @@
 from api_object.base_api import BaseApi
 from jsonpath import jsonpath
-from testcase.base_testcase import TestBase
+from testcase.test_base import TestBase
 {%- for module in module_dir_list %}
 from {{module}} import *
 {%- endfor %}
@@ -51,7 +51,7 @@ class Test{{model_name}}(TestBase):
         {% for valid in step['validate'] %}
         {%- for key,value in valid.items() -%}
         {%- if key=='equals' -%}
-        assert resp.{{value[0]}} == {{value[1]}}
+        assert resp['{{value[0]}}'] == {{value[1]}}
         {% else %}
         assert {{value[0]}} in "{{value[1]}}"
         {% endif %}

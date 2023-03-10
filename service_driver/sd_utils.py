@@ -20,9 +20,9 @@ def covert_list_to_dict(list_data):
                 {"name": "w", "value": "2"}
             ]
 
-        Returns:
-            dict:
-                {"v": "1", "w": "2"}
+    :return:
+        dict:
+            {"v": "1", "w": "2"}
     """
     return {item['name']: item.get('value') for item in list_data}
 
@@ -58,10 +58,19 @@ def get_class_and_func(api_file, url, method) -> tuple:
                     if isinstance(func, ast.FunctionDef):
                         func_str = ast.dump(func)
                         if url in func_str and method.lower() in func_str:
-                            api_class = re.search("name='(.*?)'", ast.dump(item)).group(1)
-                            func_name = re.search("name='(.*?)'", ast.dump(func)).group(1)
+                            pattern = "name='(.*?)'"
+                            api_class = re.search(pattern, ast.dump(item)).group(1)
+                            func_name = re.search(pattern, ast.dump(func)).group(1)
                             break
     return api_class, func_name
+
+
+def write(content, file_path):
+    dir_ = os.path.dirname(file_path)
+    if not os.path.exists(dir_):
+        os.makedirs(dir_)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(content)
 
 
 def create_folder(path):
@@ -75,10 +84,4 @@ def create_file(file_path, file_content=""):
     print(f"created file: {file_path}")
 
 
-def write(content, file_path):
-    dir_ = dirname(file_path)
-    if not exists(dir_):
-        makedirs(dir_)
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(content)
 
