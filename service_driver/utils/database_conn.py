@@ -57,7 +57,6 @@ class DatabaseConn:
         try:
             self.conn.ping(reconnect=True)
             self.cursor.execute(sql_str, params)
-            # 判断是否为查询语句
             return self.cursor.fetchall()
         except Exception as e:
             print(f"Error in executing sql: {str(e)}")
