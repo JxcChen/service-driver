@@ -31,7 +31,7 @@ class SwaggerGenerator:
             file_path = os.path.join(api_dir, tag.lower() + '.py')
             sd_utils.write(content, file_path)
 
-    def _get_method_attribute(self, value) -> str:
+    def _get_http_method(self, value) -> str:
         attribute = ''
         if value.get('get'):
             attribute = 'get'
@@ -90,7 +90,7 @@ class SwaggerGenerator:
 
     def _generate_template_path(self, swagger_paths):
         for path, value in swagger_paths.items():
-            method_attribute = self._get_method_attribute(value)
+            method_attribute = self._get_http_method(value)
             value['method'] = method_attribute
             value['tag'] = value[method_attribute]['tags'][0]
             value['desc'] = value[method_attribute]['summary']
@@ -102,11 +102,10 @@ class SwaggerGenerator:
             value.update(self._transform_url(path, method_attribute))
 
     def _generate_template_data(self, swagger_data) -> dict:
-        tag_path_dict = {}
-        for tag in swagger_data['tags']:
-            tag_name: str = tag['name']
-            tag_name = tag_name.replace('/', '-', -1)
-            tag_path_list = {name: path for name, path in swagger_data['paths'].items() if
-                             path['tag'].replace('/', '-', -1) == tag_name}
-            tag_path_dict[tag_name.capitalize()] = tag_path_list
+        """将数据改造后存入字典"""
+        tag_path_dict = {tag['name'].replace('/', '-', -1).capitalize():
+                             {name: path for name, path in swagger_data['paths'].items()
+                              if path['tag'].replace('/', '-', -1) == tag['name'].replace('/', '-', -1)}
+                         for tag in swagger_data['tags']}
+
         return tag_path_dict

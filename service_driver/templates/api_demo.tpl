@@ -1,7 +1,7 @@
-from api_object.base_api import BaseApi
+from api_object.base_api import Http
 
 
-class ApiDemo(BaseApi):
+class ApiDemo(Http):
     def postman_echo(self, foo1, foo2):
         """
         示例接口

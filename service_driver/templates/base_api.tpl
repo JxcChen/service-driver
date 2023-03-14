@@ -5,19 +5,18 @@ import os
 from service_driver.utils.service_logger import Logger
 
 
-class BaseApi:
-    from http.client import HTTPConnection
-    HTTPConnection.debuglevel = 1
+class Http:
+    def __init__(self, base_url):
+        self.base_uri = base_url
+        self.headers = {}
 
-    headers = {}
-    json_data = None
-    base_uri = ''
-    base_dir = os.path.join(os.path.dirname(__file__), '..')
-    logger = Logger.getLogger("api", base_dir)
+        self.base_dir = os.path.join(os.path.dirname(__file__), '..')
+        self.logger = Logger.getLogger("api", self.base_dir)
 
-    def req(self, method, url, headers=None, **kwargs):
+    def req(self, method, url, headers=None, return_json=True, **kwargs):
         """
         发送请求
+        :param return_json: 响应数据是否以json格式返回
         :param json: json格式参数
         :param params: url携带参数
         :param data: 表单参数
@@ -51,42 +50,65 @@ class BaseApi:
         if headers:
             self.headers.update(headers)
         try:
-            resp = requests.request(method=method, url=self.base_uri + url, headers=self.headers,
-                                    **kwargs)
+            resp = requests.request(method=method, url=self.base_uri + url, headers=self.headers, **kwargs)
             self.logger.info(f'请求结果：{resp.text}')
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             self.logger.error("请求接口错误: " + e.__str__())
             raise e
         try:
-            json_data: dict = resp.json()
-        except:
+            if return_json:
+                json_data: dict = resp.json()
+            else:
+                return resp
+        except ValueError:
             json_data = {}
         json_data.update({'status_code': resp.status_code,
-                         'text': resp.text,
-                         'resp_time': resp.elapsed.total_seconds(),
-                         'headers': resp.headers})
+                          'text': resp.text,
+                          'resp_time': resp.elapsed.total_seconds(),
+                          'headers': resp.headers})
         return json_data
 
-    def get_req(self, **kwargs):
+    def get_req(self, url, headers=None, return_json=True, **kwargs):
         """
-        get 请求
+        get请求
+        :param url: 请求路径
+        :param headers: 请求头
+        :param return_json: 是否返回json格式响应
+        :param kwargs: request的所有请求参数
+        :return: Response
         """
-        return self.req("get", **kwargs)
+        return self.req("get", url, headers, return_json, **kwargs)
 
-    def post_req(self, **kwargs):
+    def post_req(self, url, headers=None, return_json=True, **kwargs):
         """
-        post 请求
+        get请求
+        :param url: 请求路径
+        :param headers: 请求头
+        :param return_json: 是否返回json格式响应
+        :param kwargs: request的所有请求参数
+        :return: Response
         """
-        return self.req("post", **kwargs)
+        return self.req("post", url, headers, return_json, **kwargs)
 
-    def put_req(self, **kwargs):
+    def put_req(self, url, headers=None, return_json=True, **kwargs):
         """
-        put 请求
+        put请求
+        :param url: 请求路径
+        :param headers: 请求头
+        :param return_json: 是否返回json格式响应
+        :param kwargs: request的所有请求参数
+        :return: Response
         """
-        return self.req("put", **kwargs)
+        return self.req("put", url, headers, return_json, **kwargs)
 
-    def delete_req(self, **kwargs):
+    def delete_req(self, url, headers=None, return_json=True, **kwargs):
         """
-        delete 请求
+        put请求
+        :param url: 请求路径
+        :param headers: 请求头
+        :param return_json: 是否返回json格式响应
+        :param kwargs: request的所有请求参数
+        :return: Response
         """
-        return self.req("DELETE", **kwargs)
+        return self.req("delete", url, headers, return_json, **kwargs)
+

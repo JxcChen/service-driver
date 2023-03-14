@@ -1,7 +1,7 @@
-from api_object.base_api import BaseApi
+from api_object.base_api import Http
 
 
-class {{ tag }}(BaseApi):
+class {{ tag }}(Http):
 
     {%- for key,path in paths.items() %}
 

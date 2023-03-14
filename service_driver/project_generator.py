@@ -5,7 +5,7 @@
 # @Desc     :项目创造器
 
 import sys
-from os import listdir, makedirs
+from os import listdir
 from os.path import dirname, exists, join
 
 sys.path.append(dirname(sys.path[0]))
