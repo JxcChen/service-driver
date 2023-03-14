@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Time     :2023/3/4 8:28 上午
 # @Author   :CHNJX
-# @File     :base_testcase.py
+# @File     :testcase_mixin.py
 # @Desc     :
 from jsonschema import validate
 

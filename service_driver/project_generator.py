@@ -30,10 +30,10 @@ class ProjectGenerator:
         sd_utils.create_folder(join(project_name, 'har'))
         sd_utils.create_folder(join(project_name, 'api_object'))
         for dir_name in listdir(project_name):
-            if dir_name == 'swagger':
+            if dir_name == 'swagger' or dir_name == 'har':
                 continue
             cur_dir = join(project_name + '/' + dir_name, '__init__.py')
-            sd_utils.create_file(cur_dir)
+            sd_utils.write("", cur_dir)
         self.__generate_base_need(project_name)
 
     def __generate_base_need(self, project_name):

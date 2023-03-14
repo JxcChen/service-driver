@@ -2,8 +2,7 @@
 # @Time     :2023/2/28 18:30
 # @Author   :CHNJX
 # @File     :har_parser.py
-# @Desc     :
-import ast
+# @Desc     :har parse code
 import base64
 import json
 import logging

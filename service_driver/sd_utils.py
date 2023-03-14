@@ -5,7 +5,7 @@
 # @Desc     :public utils
 import ast
 from os import makedirs
-from os.path import exists, dirname
+import os
 from urllib.parse import unquote
 import re
 
@@ -48,6 +48,13 @@ def convert_x_www_form_to_dict(form_data: str):
 
 
 def get_class_and_func(api_file, url, method) -> tuple:
+    """
+    获取到类名和方法名
+    :param api_file: 对应api文件
+    :param url:     对应请求url
+    :param method:  请求方式
+    :return:
+    """
     api_class = ''
     func_name = ''
     with open(api_file, 'r', encoding='utf-8') as f:
@@ -66,6 +73,12 @@ def get_class_and_func(api_file, url, method) -> tuple:
 
 
 def write(content, file_path):
+    """
+    将内容写入文档中
+    :param content:  要写入的内容
+    :param file_path: 文件路径（不存在则会进行创建）
+    :return: None
+    """
     dir_ = os.path.dirname(file_path)
     if not os.path.exists(dir_):
         os.makedirs(dir_)
@@ -74,14 +87,14 @@ def write(content, file_path):
 
 
 def create_folder(path):
+    """
+    创建目录
+    :param path: 目录路径
+    :return: None
+    """
     makedirs(path)
     print(f'create folder {path}')
 
-
-def create_file(file_path, file_content=""):
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(file_content)
-    print(f"created file: {file_path}")
 
 
 

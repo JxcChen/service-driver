@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Time     :2023/2/3 4:05 下午
 # @Author   :CHNJX
-# @File     :base_testcase.py
+# @File     :testcase_mixin.py
 # @Desc     :testcase 通用方法
 
 from jsonschema import validate
@@ -15,7 +15,7 @@ from service_driver.utils.fake import Fake
 from service_driver.utils.placeholder import Placeholder
 
 
-class BaseTestcase:
+class TestcaseMixin:
     logger: logging.Logger
 
     # 将字典中的形参转换成实参

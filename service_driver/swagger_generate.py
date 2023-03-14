@@ -18,6 +18,12 @@ from service_driver import sd_utils
 class SwaggerGenerator:
 
     def generate(self, swagger_doc, api_dir=None):
+        """
+        将swagger 装换成api-object
+        :param swagger_doc: swagger文档
+        :param api_dir:     api-object存放路径
+        :return:
+        """
         if not api_dir:
             api_dir = 'api_object'
         if '/' not in swagger_doc and '\\' not in swagger_doc:
@@ -31,7 +37,12 @@ class SwaggerGenerator:
             file_path = os.path.join(api_dir, tag.lower() + '.py')
             sd_utils.write(content, file_path)
 
-    def _get_http_method(self, value) -> str:
+    def _get_http_method(self, value: dict) -> str:
+        """
+        提取请求方式
+        :param value: get:{} or post:{} or put:{} ...
+        :return: request method: get/post/put/delete...
+        """
         attribute = ''
         if value.get('get'):
             attribute = 'get'
@@ -44,11 +55,18 @@ class SwaggerGenerator:
         return attribute
 
     def _transformation_parameters(self, parameters) -> list:
+        """
+        parameters dict => parameters list
+        """
         return [param for param in parameters if
                 param['name'] != 'raw' and param['name'] != 'root' and param['in'] != 'header']
 
     # 转换json参数
     def _transformation_json(self, parameters) -> list:
+        """
+        将json参数装换成json参数名称列表
+        :return: [param1，param2...]
+        """
         json_list = []
         for param in parameters:
             if param.get('schema') and param['schema'].get('properties'):
@@ -62,8 +80,8 @@ class SwaggerGenerator:
         params_name_list.extend(json_params)
         return params_name_list
 
-    # 对url进行转换 适应restful风格
     def _transform_url(self, path, method):
+        """对url进行转换 适应restful风格"""
         path_name_list: list[str] = path.split('/')
         pat = re.compile(r'[@_!#$%^&*()<>?/\|}{~:]')
         res = {}
@@ -86,9 +104,15 @@ class SwaggerGenerator:
         return res
 
     def _transformation_file(self, json_params) -> list:
+        """抽取文件类型参数"""
         return [param for param in json_params if 'file' in param]
 
     def _generate_template_path(self, swagger_paths):
+        """
+        对path是进行解析
+        :param swagger_paths: swagger_docs 解析的path字典
+        :return:
+        """
         for path, value in swagger_paths.items():
             method_attribute = self._get_http_method(value)
             value['method'] = method_attribute
