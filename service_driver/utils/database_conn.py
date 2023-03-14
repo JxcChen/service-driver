@@ -5,12 +5,11 @@
 # @Desc     :获取数据库链接
 
 import pymysql
-from service_driver.utils.service_logger import Logger
 
 
 class DatabaseConn:
-    conn = ''
-    cursor = ''
+    conn = None
+    cursor = None
 
     def __init__(self, database_config):
         """
@@ -40,8 +39,26 @@ class DatabaseConn:
         self.conn.ping(reconnect=True)
         self.cursor.execute(sql_str, params)
         # 判断是否为查询语句
-        if 'select' in sql_str:
-            return self.cursor.fetchone()
-        else:
-            self.conn.commit()
-            return self.cursor.fetchone()
+        try:
+            self.conn.ping(reconnect=True)
+            self.cursor.execute(sql_str, params)
+            # 判断是否为查询语句
+            if 'select' in sql_str.lower():
+                return self.cursor.fetchone()
+            else:
+                self.conn.commit()
+                return self.cursor.rowcount
+        except Exception as e:
+            print(f"Error in executing sql: {str(e)}")
+            self.conn.rollback()
+
+    def excuse_sql_with_all(self, sql_str, params=None):
+        """查询语句获取全量数据"""
+        try:
+            self.conn.ping(reconnect=True)
+            self.cursor.execute(sql_str, params)
+            # 判断是否为查询语句
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(f"Error in executing sql: {str(e)}")
+            self.conn.rollback()
