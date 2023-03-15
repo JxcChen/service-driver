@@ -51,11 +51,12 @@ def swagger2api(swagger_doc, api_dir):
               type=click.Choice(['true', 'false']))
 def run(testcase, tag, reset):
     """
-    swagger文档转换成api-object
-    :param reset: auto clear report （default=False）
-    :param tag: tag name
-    :param testcase: testcase
-    """
+    运行用例并集成allure报告
+    :param testcase: 用例路径
+    :param tag: 用例标签
+    :param reset: 是否重置allure报告
+    :return: 
+    """""
     command = f'pytest -v -s {testcase}'
     if reset == 'true':
         if 'win' in sys.platform:
@@ -64,7 +65,7 @@ def run(testcase, tag, reset):
             subprocess.call(f'rmdir -rf allure-results', shell=True)
     if tag:
         command += f' -m {tag}'
-    subprocess.call(command + ' --alluredir=./allure-results')
+    subprocess.call(command + ' --alluredir=./allure-results', shell=True)
 
 
 @click.command('har2case')
@@ -75,6 +76,14 @@ def run(testcase, tag, reset):
 @click.option('-t', '--testcase', help='testcase dir', required=False, default='testcase')
 @click.option('-e', '--exclude', help='exclude url', required=False, default='')
 def har2case(har, api, testcase, exclude):
+    """
+    将har转换成用例
+    :param har: har文件路径
+    :param api: har对应api-object文件
+    :param testcase:  用例路径
+    :param exclude:  过来的url
+    :return:
+    """
     hp = HarParser(har_file_path=har, api_object=api, exclude_url=exclude)
     hp.generate_testcase(testcase_path=testcase)
 

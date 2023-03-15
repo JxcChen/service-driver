@@ -30,7 +30,7 @@ class ProjectGenerator:
         sd_utils.create_folder(join(project_name, 'har'))
         sd_utils.create_folder(join(project_name, 'api_object'))
         for dir_name in listdir(project_name):
-            if dir_name == 'swagger' or dir_name == 'har':
+            if dir_name == 'swagger' or dir_name == 'har ':
                 continue
             cur_dir = join(project_name + '/' + dir_name, '__init__.py')
             sd_utils.write("", cur_dir)
