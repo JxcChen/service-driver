@@ -1,4 +1,4 @@
-from api_object.base_api import BaseApi
+from api_object.base_api import Http
 from jsonpath import jsonpath
 from testcase.test_base import TestBase
 {%- for module in module_dir_list %}
@@ -9,7 +9,7 @@ from {{module}} import *
 class Test{{model_name}}(TestBase):
 
     def setup_class(self):
-        self.api = BaseApi()
+        self.http = Http()
 
     def test_{{case_name}}(self):
         self.logger.info('用例名称：{{case_name}}')
@@ -44,8 +44,8 @@ class Test{{model_name}}(TestBase):
             'headers': {{step['request']['headers']}},
             {% endif -%}
         }
-        resp = self.api.req(**req_data)
-        {%- endif -%}
+        resp = self.http.req(**req_data)
+        {%- endif %}
 
         # 断言
         {% for valid in step['validate'] %}

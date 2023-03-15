@@ -7,6 +7,6 @@ class TestcaseDemo(TestBase):
 
     def test_demo(self):
         resp = self.api_demo.postman_echo('bar1', 'bar2')
-        assert resp['status'] == 200
+        assert resp['status_code'] == 200
         assert resp['args']['foo1'] == 'bar1'
         assert resp['args']['foo2'] == 'bar2'

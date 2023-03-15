@@ -72,9 +72,10 @@ def run(testcase, tag, reset):
               required=True, help='har file path')
 @click.option('-a', '--api',
               required=False, help='api object dir', default=None)
-@click.option('-t', '--testcase', help='testcase dir', required=False,default='testcase')
-def har2case(har, api, testcase):
-    hp = HarParser(har_file_path=har,api_object=api)
+@click.option('-t', '--testcase', help='testcase dir', required=False, default='testcase')
+@click.option('-e', '--exclude', help='exclude url', required=False, default='')
+def har2case(har, api, testcase, exclude):
+    hp = HarParser(har_file_path=har, api_object=api, exclude_url=exclude)
     hp.generate_testcase(testcase_path=testcase)
 
 

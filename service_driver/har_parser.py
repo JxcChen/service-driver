@@ -52,8 +52,7 @@ class HarParser:
         self.api_class = ''
         self.func_name = ''
         self.module_dir = []
-        if api_object:
-            self.api_object = api_object.replace('\\', '/', -1)
+        self.api_object = api_object.replace('\\', '/', -1) if api_object else None
 
     def load_har_2_entry_json(self) -> list[dict]:
         """

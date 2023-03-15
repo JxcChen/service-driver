@@ -1,12 +1,12 @@
-from api_object.base_api import BaseApi
+from api_object.base_api import Http
 from jsonpath import jsonpath
-from testcase.base_testcase import TestBase
+from testcase.test_base import TestBase
 
 
 class Test{{model_name}}(TestBase):
 
     def setup_class(self):
-        self.api = BaseApi()
+        self.http = Http()
 
     def test_{{case_name}}(self):
         self.logger.info('用例名称：{{case_name}}')
@@ -29,12 +29,12 @@ class Test{{model_name}}(TestBase):
             {% endif -%}
         }
 
-        resp = self.api.req(**req_data)
+        resp = self.http.req(**req_data)
         # 断言
         {% for valid in step['validate'] %}
         {%- for key,value in valid.items() -%}
         {%- if key=='equals' -%}
-        assert resp.{{value[0]}} == {{value[1]}}
+        assert resp['{{value[0]}}'] == {{value[1]}}
         {% else %}
         assert {{value[0]}} in "{{value[1]}}"
         {% endif %}
